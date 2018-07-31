@@ -57,10 +57,14 @@ app.get("/api/shorturl/:shorturl", function (req, res) {
 app.post("/api/shorturl/new", function (req,res,next){
   // check if valid link
   var result = urlCheck.parse(req.body.url);
-  console.log(result);
-  if (result.protocol) next();
-  let output = {"error" : "invalid URL"};
-  res.json(output);
+  dns.lookup(result.hostname,(err,address,family) => {
+    if (err || !result.protocol) {
+      let output = {"error" : "invalid URL"};
+      res.json(output);
+    } else {
+      next();
+    };    
+  });
     
   } , (req,res) => {
   // store link in db  
@@ -75,21 +79,7 @@ app.post("/api/shorturl/new", function (req,res,next){
     });
     res.json(newUrl);
   });
-  
-  Urls.find(function (err, urls) {
-    if (err) return console.error(err);
-    console.log(urls);
-  });
-
 })
-
-
-Urls.find(function (err, urls) {
-  if (err) return console.error(err);
-  console.log(urls);
-});
-
-
 
 app.listen(port, function () {
   console.log('Node.js listening ...');
